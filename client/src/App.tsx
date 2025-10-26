@@ -6,7 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc } from "./trpc";
 import { httpBatchLink } from "@trpc/client";
 import { env } from "./lib/utils/env";
-import { ExperiencesList } from "./features/experiences/components/experiencesList";
+import { ExperiencesList } from "./features/experiences/components/ExperiencesList";
+import { InfiniteScroll } from "./features/shared/components/InfiniteScroll";
 
 export function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -50,12 +51,24 @@ export function App() {
 }
 
 function Index() {
-  const experiencesQuery = trpc.experiences.feed.useQuery({});
+  const experiencesQuery = trpc.experiences.feed.useInfiniteQuery(
+    {},
+    { getNextPageParam: (lastPage) => lastPage.nextCursor },
+  );
 
   return (
-    <ExperiencesList
-      experiences={experiencesQuery.data?.experiences ?? []}
-      isLoading={experiencesQuery.isLoading}
-    />
+    <InfiniteScroll
+      hasNextPage={!!experiencesQuery.data?.pages[0]?.nextCursor}
+      onLoadMore={experiencesQuery.fetchNextPage}
+    >
+      <ExperiencesList
+        experiences={
+          experiencesQuery.data?.pages.flatMap((page) => page.experiences) ?? []
+        }
+        isLoading={
+          experiencesQuery.isLoading || experiencesQuery.isFetchingNextPage
+        }
+      />
+    </InfiniteScroll>
   );
 }
