@@ -1,15 +1,25 @@
 import Card from "@/features/shared/components/ui/Card";
 import { CommentForList } from "../types";
+import { useState } from "react";
+import CommentEditForm from "./CommentEditForm";
+import { Button } from "@/features/shared/components/ui/Button";
 
 type CommentCardProps = {
   comment: CommentForList;
 };
 
 export default function CommentCard({ comment }: CommentCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  if (isEditing) {
+    return <CommentEditForm comment={comment} setIsEditing={setIsEditing} />;
+  }
+
   return (
     <Card className="space-y-4">
       <CommentCardHeader comment={comment} />
       <CommentCardContent comment={comment} />
+      <CommentCardButtons setIsEditing={setIsEditing} />
     </Card>
   );
 }
@@ -31,4 +41,18 @@ type CommentCardContentProps = Pick<CommentCardProps, "comment">;
 
 function CommentCardContent({ comment }: CommentCardContentProps) {
   return <div>{comment.content}</div>;
+}
+
+type CommentCardButtonsProps = {
+  setIsEditing: (isEditing: boolean) => void;
+};
+
+function CommentCardButtons({ setIsEditing }: CommentCardButtonsProps) {
+  return (
+    <div className="flex gap-4">
+      <Button variant="link" onClick={() => setIsEditing(true)}>
+        Edit
+      </Button>
+    </div>
+  );
 }
