@@ -2,10 +2,10 @@ import { ThemeProvider } from "@/features/shared/components/ThemeProvider";
 import { Toaster } from "@/features/shared/components/ui/Toaster";
 import Navbar from "@/features/shared/components/Navbar";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { trcpQueryUtils } from "@/router";
+import { trpcQueryUtils } from "@/router";
 
 export type RouterAppContext = {
-  trpcQueryUtils: typeof trcpQueryUtils;
+  trpcQueryUtils: typeof trpcQueryUtils;
 };
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

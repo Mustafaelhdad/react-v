@@ -5,13 +5,22 @@ import { ExperiencesList } from "@/features/experiences/components/ExperiencesLi
 
 export const Route = createFileRoute("/")({
   component: Index,
+  loader: async ({ context: { trpcQueryUtils } }) => {
+    const experiences = await trpcQueryUtils.experiences.feed.prefetchInfinite(
+      {},
+    );
+    return {
+      experiences,
+    };
+  },
 });
 
 function Index() {
-  const experiencesQuery = trpc.experiences.feed.useInfiniteQuery(
-    {},
-    { getNextPageParam: (lastPage) => lastPage.nextCursor },
-  );
+  const [{ pages }, experiencesQuery] =
+    trpc.experiences.feed.useSuspenseInfiniteQuery(
+      {},
+      { getNextPageParam: (lastPage) => lastPage.nextCursor },
+    );
 
   return (
     <InfiniteScroll
@@ -19,12 +28,8 @@ function Index() {
       onLoadMore={experiencesQuery.fetchNextPage}
     >
       <ExperiencesList
-        experiences={
-          experiencesQuery.data?.pages.flatMap((page) => page.experiences) ?? []
-        }
-        isLoading={
-          experiencesQuery.isLoading || experiencesQuery.isFetchingNextPage
-        }
+        experiences={pages.flatMap((page) => page.experiences)}
+        isLoading={experiencesQuery.isFetchingNextPage}
       />
     </InfiniteScroll>
   );

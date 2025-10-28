@@ -8,6 +8,7 @@ import { env } from "./lib/utils/env";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter as createTanstackRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import Spinner from "@/features/shared/components/ui/Spinner";
 
 export const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ export const trpcClient = trpc.createClient({
   ],
 });
 
-export const trcpQueryUtils = createTRPCQueryUtils({
+export const trpcQueryUtils = createTRPCQueryUtils({
   queryClient,
   client: trpcClient,
 });
@@ -32,8 +33,13 @@ function createRouter() {
     defaultPreload: "intent",
     scrollRestoration: true,
     context: {
-      trcpQueryUtils,
+      trpcQueryUtils,
     },
+    defaultPendingComponent: () => (
+      <div className="flex items-center justify-center">
+        <Spinner />
+      </div>
+    ),
     Wrap: function WrapComponent({ children }) {
       return (
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
