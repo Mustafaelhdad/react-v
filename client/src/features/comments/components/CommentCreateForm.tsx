@@ -10,7 +10,7 @@ import {
   FormField,
   FormItem,
 } from "@/features/shared/components/ui/Form";
-import { trpc } from "@/trpc";
+import { trpc } from "@/router";
 import { Button } from "@/features/shared/components/ui/Button";
 import { useToast } from "@/features/shared/hooks/useToast";
 

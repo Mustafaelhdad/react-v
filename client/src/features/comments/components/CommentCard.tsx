@@ -11,7 +11,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/features/shared/components/ui/Dialog";
-import { trpc } from "@/trpc";
+import { trpc } from "@/router";
 import { useToast } from "@/features/shared/hooks/useToast";
 
 type CommentCardProps = {
