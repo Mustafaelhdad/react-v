@@ -1,7 +1,8 @@
 import Card from "@/features/shared/components/ui/Card";
 import { ExperienceForList } from "../types";
 import { LinkIcon, MessageSquare } from "lucide-react";
-import { CommentsSection } from "@/features/comments/components/CommentsSection";
+import Link from "@/features/shared/components/ui/Link";
+import { Button } from "@/features/shared/components/ui/Button";
 
 type ExperienceCardProps = {
   experience: ExperienceForList;
@@ -16,11 +17,7 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
         <ExperienceCardHeader experience={experience} />
         <ExperienceCardContent experience={experience} />
         <ExperienceCardMeta experience={experience} />
-        <ExperienceCardFooter experience={experience} />
-        <CommentsSection
-          experienceId={experience.id}
-          commentsCount={experience.commentsCount}
-        />
+        <ExperienceCardMetricButtons experience={experience} />
       </div>
     </Card>
   );
@@ -50,9 +47,12 @@ function ExperienceCardHeader({ experience }: ExperienceCardHeaderProps) {
   return (
     <div>
       <div>{experience.user.name}</div>
-      <h2 className="text-secondary-500 dark:text-primary-500 text-xl font-bold">
-        {experience.title}
-      </h2>
+      <Link
+        to="/experiences/$experienceId"
+        params={{ experienceId: experience.id }}
+      >
+        <h2 className="text-xl font-bold">{experience.title}</h2>
+      </Link>
     </div>
   );
 }
@@ -90,13 +90,23 @@ function ExperienceCardMeta({ experience }: ExperienceCardMetaProps) {
   );
 }
 
-type ExperienceCardFooterProps = Pick<ExperienceCardProps, "experience">;
+type ExperienceCardMetricButtonsProps = Pick<ExperienceCardProps, "experience">;
 
-function ExperienceCardFooter({ experience }: ExperienceCardFooterProps) {
+function ExperienceCardMetricButtons({
+  experience,
+}: ExperienceCardMetricButtonsProps) {
   return (
     <div className="flex items-center gap-2">
-      <MessageSquare className="h-5 w-5" />
-      <span className="text-sm">{experience.commentsCount}</span>
+      <Button variant="link" asChild>
+        <Link
+          to="/experiences/$experienceId"
+          params={{ experienceId: experience.id }}
+          variant="ghost"
+        >
+          <MessageSquare className="h-5 w-5" />
+          <span>{experience.commentsCount}</span>
+        </Link>
+      </Button>
     </div>
   );
 }
