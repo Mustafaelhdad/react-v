@@ -115,9 +115,10 @@ export const authRouter = router({
       return { accessToken, user };
     }),
 
-  logout: protectedProcedure.mutation(async ({ ctx }) => {
+  // TODO: Make this protected (figure out the problem with the refresh token)
+  logout: publicProcedure.mutation(async ({ ctx }) => {
     ctx.res.clearCookie("refreshToken");
-    return;
+    return { success: true };
   }),
 
   currentUser: publicProcedure
