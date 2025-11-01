@@ -17,31 +17,32 @@ import { useToast } from "@/features/shared/hooks/useToast";
 import { router } from "@/router";
 import Link from "@/features/shared/components/ui/Link";
 
-const loginCredentialsSchema = userCredentialsSchema.omit({ name: true });
-type LoginFormData = z.infer<typeof loginCredentialsSchema>;
+const registerCredentialsSchema = userCredentialsSchema;
+type RegisterFormData = z.infer<typeof registerCredentialsSchema>;
 
-export function LoginForm() {
+export function RegisterForm() {
   const { toast } = useToast();
   const utils = trpc.useUtils();
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginCredentialsSchema),
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerCredentialsSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
   });
 
-  const loginMutation = trpc.auth.login.useMutation({
+  const registerMutation = trpc.auth.register.useMutation({
     onError: (error) => {
       toast({
-        title: "Failed to login",
+        title: "Failed to register",
         description: error.message,
         variant: "destructive",
       });
     },
     onSuccess: async (data) => {
-      // Set the currentUser query data with the login response
+      // Set the currentUser query data with the registration response
       utils.auth.currentUser.setData(undefined, {
         accessToken: data.accessToken,
         currentUser: data.user,
@@ -50,19 +51,33 @@ export function LoginForm() {
       router.navigate({ to: "/" });
 
       toast({
-        title: "Logged in successfully",
-        description: "You are now logged in",
+        title: "Registered successfully",
+        description: "You are now registered",
       });
     },
   });
 
   const handleSubmit = form.handleSubmit((data) => {
-    loginMutation.mutate(data);
+    registerMutation.mutate(data);
   });
 
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} type="text" placeholder="John Doe" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="email"
@@ -94,14 +109,14 @@ export function LoginForm() {
         <Button
           type="submit"
           className="w-full"
-          disabled={loginMutation.isPending}
+          disabled={registerMutation.isPending}
         >
-          {loginMutation.isPending ? "Logging in..." : "Login"}
+          {registerMutation.isPending ? "Registering..." : "Register"}
         </Button>
 
         <div className="flex justify-center">
-          <Link to="/register" variant="ghost" className="hover:underline">
-            Don't have an account? Register
+          <Link to="/login" variant="ghost" className="hover:underline">
+            Already have an account? Login
           </Link>
         </div>
       </form>
