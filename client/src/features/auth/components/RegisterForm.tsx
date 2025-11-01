@@ -43,10 +43,9 @@ export function RegisterForm() {
     },
     onSuccess: async (data) => {
       // Set the currentUser query data with the registration response
-      utils.auth.currentUser.setData(undefined, {
-        accessToken: data.accessToken,
-        currentUser: data.user,
-      });
+      await utils.auth.currentUser.invalidate();
+
+      form.reset();
 
       router.navigate({ to: "/" });
 
