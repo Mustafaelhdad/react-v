@@ -52,7 +52,7 @@ const getHeaders = () => {
   )?.accessToken;
 
   return {
-    Authorization: token ? `Bearer ${token}` : "",
+    Authorization: token ? `Bearer ${token}` : undefined,
   };
 };
 
@@ -67,7 +67,7 @@ export const trpcClient = trpc.createClient({
           credentials: "include",
         } as RequestInit);
       },
-      headers: getHeaders,
+      headers: getHeaders(),
     }),
   ],
 });

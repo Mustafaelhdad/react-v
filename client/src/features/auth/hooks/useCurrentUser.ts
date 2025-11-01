@@ -4,7 +4,7 @@ export function useCurrentUser() {
   const currentUserQuery = trpc.auth.currentUser.useQuery();
 
   return {
-    currentUser: currentUserQuery.data?.currentUser,
     accessToken: currentUserQuery.data?.accessToken,
+    currentUser: currentUserQuery.data?.currentUser,
   };
 }
