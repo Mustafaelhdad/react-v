@@ -2,8 +2,10 @@ import type { AppRouter } from "@advanced-react/server";
 import {
   createTRPCReact,
   createTRPCQueryUtils,
-  httpBatchLink,
+  httpLink,
   TRPCClientError,
+  httpBatchLink,
+  splitLink,
 } from "@trpc/react-query";
 import { env } from "./lib/utils/env";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,7 +14,11 @@ import { routeTree } from "./routeTree.gen";
 import Spinner from "@/features/shared/components/ui/Spinner";
 import { ErrorComponent } from "@/features/shared/components/ErrorComponent";
 import { NotFoundComponent } from "@/features/shared/components/NotFoundComponent";
-import { getQueryKey, TRPCLink } from "@trpc/react-query";
+import {
+  getQueryKey,
+  TRPCLink,
+  isNonJsonSerializable,
+} from "@trpc/react-query";
 import { observable } from "@trpc/server/observable";
 
 export const queryClient = new QueryClient();
@@ -59,15 +65,30 @@ const getHeaders = () => {
 export const trpcClient = trpc.createClient({
   links: [
     customLink,
-    httpBatchLink({
-      url: env.VITE_SERVER_BASE_URL,
-      fetch(url, options) {
-        return fetch(url, {
-          ...options,
-          credentials: "include",
-        } as RequestInit);
+    splitLink({
+      condition(op) {
+        return isNonJsonSerializable(op.input);
       },
-      headers: getHeaders(),
+      true: httpLink({
+        url: env.VITE_SERVER_BASE_URL,
+        fetch(url, options) {
+          return fetch(url, {
+            ...options,
+            credentials: "include",
+          } as RequestInit);
+        },
+        headers: getHeaders(),
+      }),
+      false: httpBatchLink({
+        url: env.VITE_SERVER_BASE_URL,
+        fetch(url, options) {
+          return fetch(url, {
+            ...options,
+            credentials: "include",
+          } as RequestInit);
+        },
+        headers: getHeaders(),
+      }),
     }),
   ],
 });
