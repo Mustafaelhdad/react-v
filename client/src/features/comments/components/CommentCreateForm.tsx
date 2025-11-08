@@ -13,6 +13,7 @@ import {
 import { trpc } from "@/router";
 import { Button } from "@/features/shared/components/ui/Button";
 import { useToast } from "@/features/shared/hooks/useToast";
+import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 
 type CommentCreateFormSchema = z.infer<typeof commentValidationSchema>;
 
@@ -20,11 +21,10 @@ type CommentCreateFormProps = {
   experienceId: Experience["id"];
 };
 
-export default function CommentCreateForm({
-  experienceId,
-}: CommentCreateFormProps) {
+export function CommentCreateForm({ experienceId }: CommentCreateFormProps) {
   const { toast } = useToast();
   const utils = trpc.useUtils();
+  const { currentUser } = useCurrentUser();
 
   const form = useForm<CommentCreateFormSchema>({
     resolver: zodResolver(commentValidationSchema),
@@ -33,39 +33,43 @@ export default function CommentCreateForm({
     },
   });
 
-  const addCommentMutation = trpc.comments.add.useMutation({
-    onError: (error) => {
-      toast({
-        title: "Failed to add comment",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-    onSuccess: async ({ experienceId }) => {
-      await Promise.all([
-        utils.comments.byExperienceId.invalidate({
-          experienceId,
-        }),
-        utils.experiences.feed.invalidate({}),
-      ]);
+  const { handleSubmit, reset } = form;
 
-      form.reset();
-      toast({
-        title: "Comment added successfully",
-      });
-    },
+  const { mutateAsync: addComment } = trpc.comments.add.useMutation();
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    await addComment(
+      {
+        experienceId,
+        content: data.content,
+      },
+      {
+        onSuccess: async () => {
+          reset();
+          await utils.comments.byExperienceId.invalidate({ experienceId });
+        },
+        onError: (error) => {
+          toast({
+            title: "Failed to add comment",
+            description: error.message,
+            variant: "destructive",
+          });
+        },
+      },
+    );
   });
 
-  const handleSubmit = form.handleSubmit((data) => {
-    addCommentMutation.mutate({
-      experienceId,
-      content: data.content,
-    });
-  });
+  if (!currentUser) {
+    return (
+      <div className="text-center text-neutral-500">
+        Please log in to add comments
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         <FormField
           control={form.control}
           name="content"
@@ -78,7 +82,7 @@ export default function CommentCreateForm({
           )}
         />
 
-        <Button type="submit" disabled={addCommentMutation.isPending}>
+        <Button type="submit" disabled={false}>
           Add Comment
         </Button>
       </form>
