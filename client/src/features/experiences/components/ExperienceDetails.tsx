@@ -4,6 +4,8 @@ import { LinkIcon } from "lucide-react";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 import { Button } from "@/features/shared/components/ui/Button";
 import Link from "@/features/shared/components/ui/Link";
+import { ExperienceDeleteDialog } from "./ExperienceDeleteDialog";
+import { useRouter } from "@tanstack/react-router";
 
 type ExperienceDetailsProps = {
   experience: ExperienceForList;
@@ -114,6 +116,8 @@ type ExperienceDetailsOwnerButtonsProps = Pick<
 function ExperienceDetailsOwnerButtons({
   experience,
 }: ExperienceDetailsOwnerButtonsProps) {
+  const router = useRouter();
+
   return (
     <div className="flex gap-4">
       <Button variant="link" asChild>
@@ -125,6 +129,14 @@ function ExperienceDetailsOwnerButtons({
           Edit
         </Link>
       </Button>
+      <ExperienceDeleteDialog
+        experience={experience}
+        onSuccess={() => {
+          router.navigate({
+            to: "/",
+          });
+        }}
+      />
     </div>
   );
 }
